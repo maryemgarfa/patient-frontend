@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import {
   ChevronLeft, ChevronRight, CheckCircle, Calendar,
-  Clock, Plus, Stethoscope,
+  Clock, Plus, Stethoscope, Brain, Sparkles,
 } from 'lucide-react';
-import { ReschedulePopup }     from '@/components/rdv/ReschedulePopup';
-import { BookingStepperModal } from '@/components/rdv/BookingStepperModal';
+import { ReschedulePopup }        from '@/components/rdv/ReschedulePopup';
+import { BookingStepperModal }    from '@/components/rdv/BookingStepperModal';
+import { PreConsultationModal }   from '@/components/rdv/PreConsultationModal';
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,8 @@ type Appointment = {
     user: { nom: string; prenom: string };
   };
   consultation?: { diagnostic: string; prescription?: string };
+  // ✅ NOUVEAU : indique si la pré-consultation a déjà été envoyée
+  preconsultationEnvoyee?: boolean;
 };
 
 type Medecin = {
@@ -59,13 +62,16 @@ export default function PatientRdvPage() {
   const [popup,       setPopup]       = useState<Appointment | null>(null);
   const [showStepper, setShowStepper] = useState(false);
 
+  // ✅ NOUVEAU : état pré-consultation
+  const [preConsultRdv, setPreConsultRdv] = useState<Appointment | null>(null);
+
   const [toast,     setToast]     = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   const load = async () => {
     const [aRes, mRes] = await Promise.all([
-     api.get('/appointments/patient/my-appointments'),
-api.get('/doctors/list'),
+      api.get('/appointments/patient/my-appointments'),
+      api.get('/doctors/list'),
     ]);
     setAppointments(aRes.data);
     setMedecins(mRes.data);
@@ -75,6 +81,16 @@ api.get('/doctors/list'),
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast(msg); setToastType(type); setTimeout(() => setToast(''), 3500);
+  };
+
+  // ✅ NOUVEAU : vérifie si un RDV peut avoir le bouton pré-consultation
+  // Conditions : statut CONFIRME + date future + pas encore envoyé
+  const canPreConsult = (a: Appointment): boolean => {
+    return (
+      a.statut === 'CONFIRME' &&
+      new Date(a.date) > now &&
+      !a.preconsultationEnvoyee
+    );
   };
 
   const rdvByDay = appointments.reduce<Record<number, Appointment[]>>((acc, a) => {
@@ -274,46 +290,76 @@ api.get('/doctors/list'),
           ) : filteredApps.map(a => {
             const cfg     = S[a.statut];
             const canEdit = new Date(a.date) > now && (a.statut === 'EN_ATTENTE' || a.statut === 'CONFIRME');
+
             return (
-              <button key={a.id} onClick={() => setPopup(a)}
-                className={`w-full bg-white rounded-[1.75rem] border-2 shadow-sm hover:shadow-md transition-all text-left group ${
+              <div key={a.id}
+                className={`w-full bg-white rounded-[1.75rem] border-2 shadow-sm transition-all ${
                   a.statut === 'ANNULE' ? 'opacity-60 border-slate-100' : cfg.border
                 }`}>
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-base font-black shrink-0 ${cfg.bg} ${cfg.text}`}>
-                        {a.medecin?.user?.prenom?.[0]}{a.medecin?.user?.nom?.[0]}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-black text-slate-800">Dr. {a.medecin?.user?.prenom} {a.medecin?.user?.nom}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{a.medecin?.specialite?.replace(/_/g, ' ')}</p>
-                        <div className="flex items-center gap-3 mt-2 flex-wrap text-[10px] font-bold text-slate-500">
-                          <span className="flex items-center gap-1.5"><Calendar size={10}/> {fmt(a.date)}</span>
-                          <span className="flex items-center gap-1.5"><Clock size={10}/> {fmtT(a.date)}</span>
-                          {a.motif && <span className="text-slate-400 truncate max-w-[140px]">{a.motif}</span>}
+                {/* Carte RDV cliquable */}
+                <button onClick={() => setPopup(a)} className="w-full text-left group">
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-base font-black shrink-0 ${cfg.bg} ${cfg.text}`}>
+                          {a.medecin?.user?.prenom?.[0]}{a.medecin?.user?.nom?.[0]}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-black text-slate-800">Dr. {a.medecin?.user?.prenom} {a.medecin?.user?.nom}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{a.medecin?.specialite?.replace(/_/g, ' ')}</p>
+                          <div className="flex items-center gap-3 mt-2 flex-wrap text-[10px] font-bold text-slate-500">
+                            <span className="flex items-center gap-1.5"><Calendar size={10}/> {fmt(a.date)}</span>
+                            <span className="flex items-center gap-1.5"><Clock size={10}/> {fmtT(a.date)}</span>
+                            {a.motif && <span className="text-slate-400 truncate max-w-[140px]">{a.motif}</span>}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 shrink-0">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black ${cfg.bg} ${cfg.text}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}/>{cfg.label}
-                      </span>
-                      {canEdit && (
-                        <span className="text-[9px] text-slate-400 font-black uppercase tracking-wide group-hover:text-emerald-500 transition-colors">
-                          Gérer →
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black ${cfg.bg} ${cfg.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}/>{cfg.label}
                         </span>
-                      )}
+                        {canEdit && (
+                          <span className="text-[9px] text-slate-400 font-black uppercase tracking-wide group-hover:text-emerald-500 transition-colors">
+                            Gérer →
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {a.consultation?.diagnostic && (
+                      <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                        <p className="text-[9px] font-black text-emerald-600 uppercase mb-1">Diagnostic</p>
+                        <p className="text-xs font-bold text-slate-700 truncate">{a.consultation.diagnostic}</p>
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                {/* ✅ NOUVEAU : Bouton Préparer ma consultation */}
+                {canPreConsult(a) && (
+                  <div className="px-5 pb-5">
+                    <button
+                      onClick={() => setPreConsultRdv(a)}
+                      className="w-full flex items-center justify-center gap-2.5 py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-2xl text-xs font-black shadow-lg shadow-violet-200 hover:opacity-90 transition-all"
+                    >
+                      <Brain size={14} />
+                      Préparer ma consultation avec l'IA
+                      <Sparkles size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {/* ✅ Badge : pré-consultation déjà envoyée */}
+                {a.statut === 'CONFIRME' && a.preconsultationEnvoyee && new Date(a.date) > now && (
+                  <div className="px-5 pb-5">
+                    <div className="flex items-center gap-2 py-2.5 px-4 bg-violet-50 border border-violet-100 rounded-2xl">
+                      <CheckCircle size={13} className="text-violet-500" />
+                      <p className="text-xs font-bold text-violet-600">
+                        Résumé de pré-consultation envoyé au médecin ✅
+                      </p>
                     </div>
                   </div>
-                  {a.consultation?.diagnostic && (
-                    <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-                      <p className="text-[9px] font-black text-emerald-600 uppercase mb-1">Diagnostic</p>
-                      <p className="text-xs font-bold text-slate-700 truncate">{a.consultation.diagnostic}</p>
-                    </div>
-                  )}
-                </div>
-              </button>
+                )}
+              </div>
             );
           })}
         </div>
@@ -329,7 +375,23 @@ api.get('/doctors/list'),
         />
       )}
 
-      {/* Stepper prise de RDV — composant séparé, réutilise MedecinCalendar + useBookingSlots */}
+      {/* ✅ NOUVEAU : Modal pré-consultation IA */}
+      {preConsultRdv && (
+        <PreConsultationModal
+          appointmentId={preConsultRdv.id}
+          medecinNom={`${preConsultRdv.medecin.user.prenom} ${preConsultRdv.medecin.user.nom}`}
+          specialite={preConsultRdv.medecin.specialite}
+          dateRdv={preConsultRdv.date}
+          onClose={() => setPreConsultRdv(null)}
+          onDone={async () => {
+            setPreConsultRdv(null);
+            await load();
+            showToast('Résumé envoyé au médecin avec succès !');
+          }}
+        />
+      )}
+
+      {/* Stepper prise de RDV */}
       {showStepper && (
         <BookingStepperModal
           medecins={medecins}

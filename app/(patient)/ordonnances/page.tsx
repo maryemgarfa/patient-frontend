@@ -59,7 +59,7 @@ export default function PatientOrdonnances() {
       a.consultation?.prescription ?? '',
       '',
       '════════════════════════════════════════',
-      'Document généré via AloDocteur',
+      'Document généré via MyDoctor TN',
     ].join('\n');
 
     const el = document.createElement('a');

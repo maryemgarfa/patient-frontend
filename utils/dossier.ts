@@ -55,7 +55,7 @@ export const downloadOrdonnance = (
     consultation?.prescription ?? '',
     '',
     '══════════════════════════════════════════════',
-    'Document généré via AloDocteur',
+    'Document généré via MyDoctor TN',
   ].join('\n');
 
   const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });

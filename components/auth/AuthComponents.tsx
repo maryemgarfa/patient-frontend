@@ -61,7 +61,7 @@ export function AuthPanel({ title, subtitle }: { title: string; subtitle: string
     <div className="hidden md:flex md:w-1/2 bg-emerald-600 items-center justify-center p-12 text-white">
       <div className="max-w-md text-center">
         <div className="inline-block p-4 bg-white rounded-3xl mb-6 shadow-2xl">
-          <span className="text-4xl font-black text-emerald-600 tracking-tighter">AloDocteur</span>
+          <span className="text-4xl font-black text-emerald-600 tracking-tighter">MyDoctor TN</span>
         </div>
         <h1 className="text-4xl font-bold mb-4">{title}</h1>
         <p className="text-emerald-50 text-lg opacity-90">{subtitle}</p>
@@ -82,7 +82,7 @@ export function RegisterPanel() {
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white font-black text-xl">+</div>
-          <span className="text-white font-black text-2xl tracking-tighter">AloDocteur</span>
+          <span className="text-white font-black text-2xl tracking-tighter">MyDoctor TN</span>
         </div>
       </div>
       <div className="relative z-10 space-y-8">
@@ -111,7 +111,7 @@ export function RegisterPanel() {
         </div>
       </div>
       <div className="relative z-10">
-        <p className="text-white/20 text-xs font-semibold">© 2026 AloDocteur — Plateforme médicale tunisienne</p>
+        <p className="text-white/20 text-xs font-semibold">© 2026 MyDoctor TN — Plateforme médicale tunisienne</p>
       </div>
     </div>
   );

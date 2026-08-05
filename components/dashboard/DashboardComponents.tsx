@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Calendar, ChevronRight, Filter, Search, X, Phone, RefreshCw } from 'lucide-react';
 import { SPEC_DATA } from '@/constants/patient.config';
 import { fmtDate, fmtTime, imageUrl } from '@/utils/date.utils';
@@ -14,14 +15,22 @@ type HeroSectionProps = {
 };
 
 export function HeroSection({ prenom, prochainRdv, onRdvClick }: HeroSectionProps) {
+  const [dateStr, setDateStr] = useState('');
+
+  useEffect(() => {
+    setDateStr(
+      new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
+    );
+  }, []);
+
   return (
     <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-8 rounded-3xl text-white relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-24 translate-x-24" />
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
       <div className="relative z-10">
-        <p className="text-emerald-100/70 text-sm font-bold capitalize">
-          {new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
-        </p>
+       <p className="text-emerald-100/70 text-sm font-bold capitalize" suppressHydrationWarning>
+  {dateStr}
+</p>
         <h1 className="text-3xl font-black mt-1 mb-4">
           Bonjour, <span className="text-emerald-200">{prenom || 'Patient'}</span> 👋
         </h1>

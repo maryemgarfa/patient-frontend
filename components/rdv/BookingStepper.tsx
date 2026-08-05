@@ -9,6 +9,8 @@ import {
 import api from '@/lib/api';
 import { useBookingSlots } from '@/hooks/useBookingSlots';
 import { MedecinCalendar } from '@/components/rdv/MedecinCalendar';
+import { TriageStep } from '@/components/rdv/TriageStep';
+import type { TriageResult } from '@/components/rdv/TriageStep';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,6 +81,7 @@ export function BookingStepper({ medecin, existingRdv, appointments = [], onClos
 
   // ── État local ─────────────────────────────────────────────────────────────
   const [step,         setStep]         = useState(1);
+  const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
   const [selCreneauId, setSelCreneauId] = useState('');
   const [motif,        setMotif]        = useState(existingRdv?.motif ?? '');
   const [loading,      setLoading]      = useState(false);
@@ -131,7 +134,7 @@ export function BookingStepper({ medecin, existingRdv, appointments = [], onClos
       String(new Date(selCreneau.debut).getDate()).padStart(2, '0')
     : '';
 
-  const STEPS = [{ n: 1, label: 'Date & heure' }, { n: 2, label: 'Motif' }, { n: 3, label: 'Confirmer' }];
+  const STEPS = [{ n: 1, label: 'Triage IA' }, { n: 2, label: 'Date & heure' }, { n: 3, label: 'Motif' }, { n: 4, label: 'Confirmer' }];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-sm"
@@ -227,6 +230,18 @@ export function BookingStepper({ medecin, existingRdv, appointments = [], onClos
           )}
 
           {step === 1 && (
+            <TriageStep
+              specialiteMedecin={medecin.specialite}
+              onNext={(motifPrefill, triage) => {
+                setMotif(motifPrefill);
+                setTriageResult(triage);
+                setStep(2);
+              }}
+              onSkip={() => setStep(2)}
+            />
+          )}
+
+          {step === 2 && (
             <MedecinCalendar
               creneaux={creneaux}
               absences={absences}
@@ -238,7 +253,7 @@ export function BookingStepper({ medecin, existingRdv, appointments = [], onClos
             />
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="max-w-md mx-auto space-y-5 py-2">
               {selCreneau && (
                 <div className={`bg-gradient-to-r ${gradient} rounded-2xl p-4 flex items-center gap-4 text-white`}>
@@ -260,7 +275,7 @@ export function BookingStepper({ medecin, existingRdv, appointments = [], onClos
             </div>
           )}
 
-          {step === 3 && selCreneau && (
+          {step === 4 && selCreneau && (
             <div className="max-w-md mx-auto space-y-4 py-2">
               <div className="bg-slate-900 rounded-[2rem] p-7 text-white">
                 <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
@@ -328,16 +343,18 @@ export function BookingStepper({ medecin, existingRdv, appointments = [], onClos
             className="flex-1 py-3.5 bg-slate-100 text-slate-600 rounded-2xl text-sm font-black hover:bg-slate-200 transition-all">
             {step === 1 ? 'Annuler' : '← Retour'}
           </button>
-          <button
-            disabled={step === 1 ? !selCreneauId : loading}
-            onClick={() => step < 3 ? setStep(s => s + 1) : handleBook()}
-            className={`flex-[2] py-3.5 bg-gradient-to-r ${gradient} text-white rounded-2xl text-sm font-black shadow-lg disabled:opacity-40 flex items-center justify-center gap-2 transition-all hover:opacity-90`}>
-            {loading
-              ? <><RefreshCw className="animate-spin" size={16}/> Réservation...</>
-              : step === 3
-              ? <><Check size={16}/> {existingRdv ? 'Modifier le rendez-vous' : 'Confirmer le rendez-vous'}</>
-              : <>Suivant <ChevronRight size={16}/></>}
-          </button>
+          {step > 1 && (
+            <button
+              disabled={step === 2 ? !selCreneauId : loading}
+              onClick={() => step < 4 ? setStep(s => s + 1) : handleBook()}
+              className={`flex-[2] py-3.5 bg-gradient-to-r ${gradient} text-white rounded-2xl text-sm font-black shadow-lg disabled:opacity-40 flex items-center justify-center gap-2 transition-all hover:opacity-90`}>
+              {loading
+                ? <><RefreshCw className="animate-spin" size={16}/> Réservation...</>
+                : step === 4
+                ? <><Check size={16}/> {existingRdv ? 'Modifier le rendez-vous' : 'Confirmer le rendez-vous'}</>
+                : <>Suivant <ChevronRight size={16}/></>}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -40,7 +40,7 @@ export default function Sidebar({ collapsed, initials, userName, onItemClick }: 
           +
         </div>
         {!collapsed && (
-          <span className="text-xl font-black text-slate-800 tracking-tighter">AloDocteur</span>
+          <span className="text-xl font-black text-slate-800 tracking-tighter">MyDoctor TN</span>
         )}
       </div>
 

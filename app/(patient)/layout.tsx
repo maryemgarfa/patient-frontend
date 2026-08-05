@@ -103,7 +103,7 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
 
       {/* ── Profile completion stepper ────────────────────────────────────── */}
       {showStepper && (
-        <ProfileCompletionStepper onClose={closeStepper} onSaved={closeStepper} />
+        <ProfileCompletionStepper onClose={closeStepper}  />
       )}
     </div>
   );

@@ -20,6 +20,8 @@ import {
 import api from '@/lib/api';
 import { useBookingSlots } from '@/hooks/useBookingSlots';
 import { MedecinCalendar } from './MedecinCalendar';
+import { TriageStep } from '@/components/rdv/TriageStep';
+import type { TriageResult } from '@/components/rdv/TriageStep';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -400,7 +402,8 @@ function StepConfirmation({
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function BookingStepperModal({ medecins, appointments, onClose, onDone }: Props) {
-  const [step,         setStep]         = useState<1 | 2 | 3>(1);
+  const [step,         setStep]         = useState<1 | 2 | 3 | 4>(1);
+  const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
   const [selected,     setSelected]     = useState<MedecinForBooking | null>(null);
   const [selCreneauId, setSelCreneauId] = useState('');
   const [motif,        setMotif]        = useState('');
@@ -455,12 +458,13 @@ export function BookingStepperModal({ medecins, appointments, onClose, onDone }:
     }
   };
 
-  const canNext = step === 1 ? !!selected : step === 2 ? !!selCreneauId : false;
+  const canNext = step === 1 ? !!selected : step === 3 ? !!selCreneauId : step === 2 ? true : false;
 
   const STEPS = [
     { n: 1, label: 'Médecin'  },
-    { n: 2, label: 'Créneau'  },
-    { n: 3, label: 'Confirmer'},
+    { n: 2, label: 'Triage IA'},
+    { n: 3, label: 'Créneau'  },
+    { n: 4, label: 'Confirmer'},
   ];
 
   return (
@@ -537,13 +541,24 @@ export function BookingStepperModal({ medecins, appointments, onClose, onDone }:
             />
           )}
           {step === 2 && selected && (
+            <TriageStep
+              specialiteMedecin={selected.specialite}
+              onNext={(motifPrefill, triage) => {
+                setMotif(motifPrefill);
+                setTriageResult(triage);
+                setStep(3);
+              }}
+              onSkip={() => setStep(3)}
+            />
+          )}
+          {step === 3 && selected && (
             <StepChoixCreneau
               medecin={selected}
               selCreneauId={selCreneauId}
               onSelectCreneau={setSelCreneauId}
             />
           )}
-          {step === 3 && selected && (
+          {step === 4 && selected && (
             <StepConfirmation
               medecin={selected}
               selCreneauId={selCreneauId}
@@ -565,7 +580,7 @@ export function BookingStepperModal({ medecins, appointments, onClose, onDone }:
             {step === 1 ? <><X size={13}/> Annuler</> : <><ChevronLeft size={13}/> Retour</>}
           </button>
 
-          {step < 3 ? (
+          {step < 4 && step !== 2 ? (
             <button
               onClick={handleNext}
               disabled={!canNext}
@@ -573,6 +588,8 @@ export function BookingStepperModal({ medecins, appointments, onClose, onDone }:
             >
               Suivant <ArrowRight size={14}/>
             </button>
+          ) : step === 2 ? (
+            <div/>
           ) : (
             <button
               onClick={handleConfirm}

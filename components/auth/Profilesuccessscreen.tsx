@@ -126,7 +126,7 @@ export default function ProfileSuccessScreen({ onClose }: { onClose: () => void 
             transition: 'opacity 0.4s ease 0.8s, transform 0.4s ease 0.8s, background-color 0.15s, transform 0.1s',
           }}
         >
-          Commencer à utiliser AloDocteur →
+          Commencer à utiliser MyDoctor TN →
         </button>
       </div>
 

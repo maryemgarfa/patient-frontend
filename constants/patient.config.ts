@@ -1,9 +1,7 @@
 import {
   Heart, Brain, Eye, Stethoscope, Baby, Bone,
-  Activity, BriefcaseMedical,
+  Activity, BriefcaseMedical, Ear, Droplet, Wind,
 } from 'lucide-react';
-
-// ─── Spécialités config ───────────────────────────────────────────────────────
 
 export const SPEC_DATA: Record<string, {
   label:  string;
@@ -23,10 +21,12 @@ export const SPEC_DATA: Record<string, {
   DENTISTE:          { label: 'Dentiste',       icon: BriefcaseMedical, color: 'text-cyan-600',   bg: 'bg-cyan-50',    border: 'border-cyan-200'   },
   PSYCHIATRE:        { label: 'Psychiatre',     icon: Brain,            color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-200' },
   NUTRITIONNISTE:    { label: 'Nutritionniste', icon: Activity,         color: 'text-lime-600',   bg: 'bg-lime-50',    border: 'border-lime-200'   },
+  ORL:               { label: 'ORL',            icon: Ear,              color: 'text-teal-600',   bg: 'bg-teal-50',    border: 'border-teal-200'   },
+  UROLOGIE:          { label: 'Urologie',       icon: Droplet,          color: 'text-sky-600',    bg: 'bg-sky-50',     border: 'border-sky-200'    },
+  PNEUMOLOGIE:       { label: 'Pneumologie',    icon: Wind,             color: 'text-cyan-700',   bg: 'bg-cyan-50',    border: 'border-cyan-300'   },
+  GASTROENTEROLOGIE: { label: 'Gastro-entérologie', icon: Activity,     color: 'text-yellow-700', bg: 'bg-yellow-50',  border: 'border-yellow-200' },
   default:           { label: 'Médecin',        icon: Stethoscope,      color: 'text-slate-500',  bg: 'bg-slate-50',   border: 'border-slate-200'  },
 };
-
-// ─── Gradient par spécialité (pour BookingStepper) ────────────────────────────
 
 export const SPEC_GRADIENT: Record<string, string> = {
   CARDIOLOGIE:       'from-red-400 to-rose-500',
@@ -40,10 +40,12 @@ export const SPEC_GRADIENT: Record<string, string> = {
   DENTISTE:          'from-cyan-400 to-blue-400',
   PSYCHIATRE:        'from-indigo-400 to-purple-500',
   NUTRITIONNISTE:    'from-lime-400 to-green-500',
+  ORL:               'from-teal-400 to-cyan-500',
+  UROLOGIE:          'from-sky-400 to-blue-500',
+  PNEUMOLOGIE:       'from-cyan-500 to-teal-600',
+  GASTROENTEROLOGIE: 'from-yellow-400 to-amber-500',
   default:           'from-slate-400 to-slate-600',
 };
-
-// ─── Statut RDV config ────────────────────────────────────────────────────────
 
 export const STATUT_CONFIG: Record<string, {
   label: string; bg: string; text: string; dot: string; border: string;
@@ -53,8 +55,6 @@ export const STATUT_CONFIG: Record<string, {
   ANNULE:     { label: 'Annulé',     bg: 'bg-red-50',     text: 'text-red-600',     dot: 'bg-red-400',     border: 'border-red-200'     },
   TERMINE:    { label: 'Terminé',    bg: 'bg-slate-100',  text: 'text-slate-500',   dot: 'bg-slate-400',   border: 'border-slate-200'   },
 };
-
-// ─── Notification type config ─────────────────────────────────────────────────
 
 export const NOTIF_TYPE_CONFIG: Record<string, { color: string }> = {
   RDV_CONFIRME:      { color: 'text-emerald-600 bg-emerald-50' },
